@@ -1,111 +1,85 @@
 from helpers import *
-import requests
 from data import *
 import allure
+from http import HTTPStatus
 
 
 class TestCourierLogin:
     @allure.title('Проверка успешной авторизации курьера')
     @allure.description('Тест проверяет, что курьер может авторизоваться, возвращается код 200')
     def test_login_courier_successful(self):
-        login = generate_random_string(10)
-        password = generate_random_string(10)
-        first_name = generate_random_string(10)
-        payload_create_courier = {
-            "login": login,
-            "password": password,
-            "firstName": first_name
-        }
+        payload_create_courier = create_registration_payload()
+
         payload_login_courier = {
-            "login": login,
-            "password": password
+            "login": payload_create_courier["login"],
+            "password": payload_create_courier["password"]
         }
-        requests.post(f'{test_url}/api/v1/courier', data=payload_create_courier)
+        Requests.requests_post_create(payload_create_courier)
 
-        response_login_courier = requests.post(f'{test_url}/api/v1/courier/login', data=payload_login_courier)
+        response_login_courier = Requests.requests_post_login(payload_login_courier)
 
-        assert response_login_courier.status_code == 200 and response_login_courier.json()["id"]
+        assert response_login_courier.status_code == HTTPStatus.OK and response_login_courier.json()["id"]
 
     @allure.title('Проверка авторизации курьера без логина')
     @allure.description('Тест проверяет, что курьер не может авторизоваться без логина, возвращается код 400 и '
                         'ошибка в теле ответа')
     def test_login_courier_without_login(self):
-        login = generate_random_string(10)
-        password = generate_random_string(10)
-        payload_create_courier = {
-            "login": login,
-            "password": password,
-        }
+        payload_create_courier = create_registration_payload()
         payload_login_courier = {
             "login": '',
-            "password": password
+            "password": payload_create_courier["password"]
         }
-        requests.post(f'{test_url}/api/v1/courier', data=payload_create_courier)
+        Requests.requests_post_create(payload_create_courier)
 
-        response_without_login_courier = requests.post(f'{test_url}/api/v1/courier/login', data=payload_login_courier)
+        response_without_login_courier = Requests.requests_post_login(payload_login_courier)
 
-        assert (response_without_login_courier.status_code == 400 and response_without_login_courier.json()['message']
-                == message_3)
+        assert (response_without_login_courier.status_code == HTTPStatus.BAD_REQUEST and
+                response_without_login_courier.json()['message'] == MESSAGE_3)
 
     @allure.title('Проверка авторизации курьера без пароля')
     @allure.description('Тест проверяет, что курьер не может авторизоваться без пароля, возвращается код 400 и '
                         'ошибка в теле ответа')
     def test_login_courier_without_password(self):
-        login = generate_random_string(10)
-        password = generate_random_string(10)
-        payload_create_courier = {
-            "login": login,
-            "password": password
-        }
+        payload_create_courier = create_registration_payload()
         payload_login_courier = {
-            "login": login,
+            "login": payload_create_courier["login"],
             "password": ''
         }
-        requests.post(f'{test_url}/api/v1/courier', data=payload_create_courier)
+        Requests.requests_post_create(payload_create_courier)
 
-        response_without_login_courier = requests.post(f'{test_url}/api/v1/courier/login', data=payload_login_courier)
+        response_without_login_courier = Requests.requests_post_login(payload_login_courier)
 
-        assert (response_without_login_courier.status_code == 400 and response_without_login_courier.json()['message']
-                == message_3)
+        assert (response_without_login_courier.status_code == HTTPStatus.BAD_REQUEST and
+                response_without_login_courier.json()['message'] == MESSAGE_3)
 
     @allure.title('Проверка авторизации курьера с неправильным или несуществующим логином')
     @allure.description('Тест проверяет, что курьер не может авторизоваться с неправильным или несуществующим '
                         'логином, возвращается код 404 и ошибка в теле ответа')
     def test_login_courier_with_incorrect_login(self):
-        login = generate_random_string(10)
-        password = generate_random_string(10)
-        payload_create_courier = {
-            "login": login,
-            "password": password
-        }
+        payload_create_courier = create_registration_payload()
         payload_login_courier = {
             "login": 'incorrect_login',
-            "password": password
+            "password": payload_create_courier["password"]
         }
-        requests.post(f'{test_url}/api/v1/courier', data=payload_create_courier)
+        Requests.requests_post_create(payload_create_courier)
 
-        response_without_login_courier = requests.post(f'{test_url}/api/v1/courier/login', data=payload_login_courier)
+        response_without_login_courier = Requests.requests_post_login(payload_login_courier)
 
-        assert (response_without_login_courier.status_code == 404 and response_without_login_courier.json()['message']
-                == message_4)
+        assert (response_without_login_courier.status_code == HTTPStatus.NOT_FOUND and
+                response_without_login_courier.json()['message'] == MESSAGE_4)
 
     @allure.title('Проверка авторизации курьера с неправильным паролем')
     @allure.description('Тест проверяет, что курьер не может авторизоваться с неправильным паролем, возвращается '
                         'код 404 и ошибка в теле ответа')
     def test_login_courier_with_incorrect_password(self):
-        login = generate_random_string(10)
-        password = generate_random_string(10)
-        payload_create_courier = {
-            "login": login,
-            "password": password
-        }
+        payload_create_courier = create_registration_payload()
         payload_login_courier = {
-            "login": login,
+            "login": payload_create_courier["login"],
             "password": '123456'
         }
-        requests.post(f'{test_url}/api/v1/courier', data=payload_create_courier)
+        Requests.requests_post_create(payload_create_courier)
 
-        response_without_login_courier = requests.post(f'{test_url}/api/v1/courier/login', data=payload_login_courier)
+        response_without_login_courier = Requests.requests_post_login(payload_login_courier)
 
-        assert (response_without_login_courier.status_code == 404 and response_without_login_courier.json()['message']
-                == message_4)
+        assert (response_without_login_courier.status_code == HTTPStatus.NOT_FOUND and
+                response_without_login_courier.json()['message'] == MESSAGE_4)

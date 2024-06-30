@@ -1,8 +1,8 @@
 import json
-from data import *
-import requests
 import pytest
 import allure
+from http import HTTPStatus
+from helpers import *
 
 
 class TestOrderCreation:
@@ -26,7 +26,8 @@ class TestOrderCreation:
              ),
         ]
     )
-    def test_create_order(self, first_name, last_name, address, metro_station, phone, rent_time, delivery_date, comment, color):
+    def test_create_order(self, first_name, last_name, address, metro_station, phone, rent_time, delivery_date,
+                          comment, color):
         payload = {
             "firstName": first_name,
             "lastName": last_name,
@@ -41,6 +42,6 @@ class TestOrderCreation:
 
         json_body = json.dumps(payload)
 
-        response = requests.post(f'{test_url}/api/v1/orders', data=json_body)
+        response = Requests.requests_post_create_order(json_body)
 
-        assert response.status_code == 201 and response.json()["track"]
+        assert response.status_code == HTTPStatus.CREATED and response.json()["track"]
